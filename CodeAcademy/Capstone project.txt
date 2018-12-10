@@ -1,0 +1,130 @@
+Capstone project
+
+Warby Parker
+
+Q2
+
+SELECT question, COUNT(user_id)
+FROM survey
+GROUP BY question;
+
+
+Q4
+
+SELECT *
+FROM quiz
+LIMIT 5;
+
+SELECT *
+FROM home_try_on
+LIMIT 5;
+
+SELECT *
+FROM purchase
+LIMIT 5;
+
+Q5
+
+WITH user_info as 
+(SELECT 
+q.user_id, 
+h.user_id IS NOT NULL AS 'is_home_try_on',
+h.number_of_pairs AS 'pairs',
+p.user_id IS NOT NULL AS 'is_purchase'
+FROM quiz as q
+LEFT JOIN home_try_on as h
+ON q.user_id = h.user_id
+LEFT JOIN purchase as p
+ON p.user_id = h.user_id)
+
+SELECT *
+FROM user_info
+LIMIT 10;
+
+
+Q6
+
+1) Conversion from quiz to try on to purchase
+
+SELECT COUNT(user_id),
+SUM(is_home_try_on),
+SUM(is_purchase)
+FROM user_info;
+
+2) Comparison between 3 and 5 pairs for home try on
+
+SELECT pairs, 
+COUNT(is_home_try_on),
+SUM(is_purchase)
+FROM user_info
+GROUP BY pairs;
+
+3) 
+    a) Men’s style vs Women’s style
+
+SELECT q.style, 
+COUNT(DISTINCT q.user_id) AS 'Quiz_answers',
+COUNT(DISTINCT h.user_id) AS 'Home_try_on',
+COUNT(DISTINCT p.user_id) AS 'Purchases'
+FROM quiz as q
+LEFT JOIN purchase as p
+ON q.style = p.style
+LEFT JOIN home_try_on as h
+ON h.user_id = q.user_id
+GROUP BY q.style;
+
+    b) Isolating users who skipped style question
+
+SELECT h.number_of_pairs, 
+COUNT(DISTINCT q.user_id) AS 'Quiz_answers',
+COUNT(DISTINCT h.user_id) AS 'Home_try_on',
+COUNT(DISTINCT p.user_id) AS 'Purchases'
+FROM quiz as q
+LEFT JOIN purchase as p
+ON q.style = p.style
+LEFT JOIN home_try_on as h
+ON h.user_id = q.user_id
+WHERE q.style LIKE '%not sure%'
+GROUP BY h.number_of_pairs;
+
+
+4) Most popular purchases
+
+SELECT product_id,model_name, color, COUNT(*)
+FROM purchase
+GROUP BY model_name, color;
+
+
+5) Price comparison
+
+
+SELECT price,  COUNT(*)
+FROM purchase
+GROUP BY price;
+
+
+6) Top answers on quiz
+
+top_answers_quiz AS (
+SELECT question, response, COUNT(response) AS 'number_answers'
+FROM survey
+GROUP BY question, response
+ORDER BY COUNT(response) DESC)
+
+SELECT question, response, MAX(number_answers) as 'number_answers', SUM(number_answers) as 'Total_answers'
+FROM top_answers_quiz
+GROUP BY question
+ORDER BY MAX(number_answers) DESC;
+
+
+
+
+
+
+
+
+
+
+
+
+
